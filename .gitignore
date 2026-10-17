@@ -1,0 +1,9 @@
+*.vtk
+*.vtu
+*.vtp
+*.h5
+*.hdf5
+*.msh
+build/
+__pycache__/
+*.pyc
