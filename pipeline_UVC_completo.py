@@ -4,9 +4,6 @@ pipeline_UVC_completo.py
 Pipeline unificado: parte de uma malha biventricular VOLUMÉTRICA (.vtu) e
 entrega a superfície (.vtp) com as 6 marcações do padrão UVC / Cobiveco.
 
-Unifica o antigo `extract_surface.py` (Etapa 0) com o `pipeline_UVC.py`
-(Etapas 1–5) num único comando.
-
 Etapas:
 
     0. Extrai a superfície do volume (.vtu → .vtp) com vtkGeometryFilter,
@@ -21,12 +18,6 @@ Etapas:
     5. Marca o Apex com exatamente 1 ponto (projeção máxima ao longo da
        normal do plano basal), ou a partir de um arquivo com Point ID(s)
        ou com a coordenada (x, y, z) do apex.
-
-Uso típico (tudo automático, a partir do volume):
-    python pipeline_UVC_completo.py Patient_5.vtu P5.vtp
-
-Ainda aceita entrada já em superfície (a Etapa 0 é ignorada):
-    python pipeline_UVC_completo.py Patient_5.vtp P5.vtp
 
 Arquivos gravados:
     intermediarios/<base>_etapa0_superficie.vtp   ← superfície crua (.vtu → .vtp)
