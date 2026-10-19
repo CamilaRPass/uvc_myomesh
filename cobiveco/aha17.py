@@ -28,37 +28,6 @@ Convencao deste pipeline (confirmada em uvc.py / rotational.py)
                         rt = +-pi/2   = juncao VE-VD epicardica
     tv: 0 = VE, 1 = VD
 
-O PROBLEMA DO rt NO VD (e como este modulo o resolve)
------------------------------------------------------
-O `computeRotational` portado aqui segue Bayer et al. 2018 e impoe Dirichlet
-apenas nas DUAS juncoes VE-VD (+pi/2 e -pi/2). Alem disso, `tv = round(sol -
-0.01)` joga o septo inteiro para o lado do VE. Consequencia: a malha do VD e
-so a PAREDE LIVRE, e o rt dela percorre apenas o arco [-pi/2, +pi/2] — meia
-volta.
-
-Se a gente simplesmente reaplicar a regra do VE sobre esse rt (modo 'raw'),
-metade dos setores de 18..34 fica VAZIA: nao ha no algum com |rt| > pi/2 no
-VD. Era exatamente esse o aviso que a versao anterior emitia.
-
-A correcao (modo 'stretch', padrao) e reparametrizar o arco do VD para a
-volta inteira ANTES de fatiar:
-
-    psi = pi * wrap(rt_vd - c) / h,     c = centro do arco, h = semi-abertura
-
-com (c, h) medidos na propria malha por percentis (robusto ao preenchimento
-por vizinho mais proximo). O mapa e linear, monotono e preserva o sentido
-(psi > 0 continua sendo o lado anterior), entao os 17 setores do VD passam a
-cobrir a parede livre inteira e os 34 rotulos existem de fato.
-
-NOMENCLATURA DO VD. Com psi = 0 no centro da parede livre e as juncoes em
-psi = +-pi — que e a UNICA forma continua de levar um arco na circunferencia
-inteira —, os nomes "septal/lateral" do VE deixam de fazer sentido no VD (o
-septo nao esta na malha do VD: ele pertence a tv=0). Por isso o modo
-'stretch' usa nomes honestos, por posicao dentro da parede livre
-("central", "medio", "juncao"), e nao os nomes espelhados do VE. Se voce
-precisa bater literalmente com o exampleAHAParcellation.m, use
-rv_rt_mode='raw', que mantem os nomes espelhados e a limitacao de meia volta.
-
 Uso direto:
     from cobiveco.aha17 import aha17_from_uvc
     seg = aha17_from_uvc(ab, rt, tv, tm=tm)      # 1..17 no VE, 18..34 no VD
