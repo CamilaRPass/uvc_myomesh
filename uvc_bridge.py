@@ -4,47 +4,6 @@ uvc_bridge.py
 Ponte entre o `pipeline_UVC_completo.py` (marcação da superfície) e o
 pacote `cobiveco/` (cálculo das coordenadas UVC).
 
-O `cobiveco.UVC.prepareMesh` tem um contrato implícito muito específico:
-
-    inPrefix = ".../heart_for_UVC"
-        → lê  ".../heart.vtu"            (volume tetraédrico, sem arrays)
-        → lê  ".../heart_for_UVC.vtp"    (superfície com PointData 'class')
-        → extrai a superfície do .vtu com vtkDataSetSurfaceFilter e copia
-          a 'class' do .vtp por VIZINHO MAIS PRÓXIMO.
-
-E a numeração de 'class' que o resto do pacote assume é:
-
-    1 = Base
-    2 = Epi
-    3 = LV Endo   (endocárdio do VE — parede livre)
-    4 = RV Endo   (endocárdio do VD — parede livre)
-    5 = Apex      (exatamente 1 ponto)
-    6 = Septo     (face VD do septo, ou seja, a parte do endocárdio do VD
-                   que recobre o septo)
-
-Evidência de (3 = VE, 4 = VD) dentro do próprio pacote:
-  - computeTransventricular: class 3 → tv=0, class 4 → tv=1, e splitMesh
-    define lv = tv<0.5;
-  - computeTransmural (VD): endo = class 4, epi = class 2.
-
-Evidência de que class 6 é a face VD do septo:
-  - computeTransventricular dá Dirichlet 0.5 ao septo, e `tv = round(sol-0.01)`
-    joga o septo inteiro para o lado do VE — logo o corte VE/VD passa pela
-    face VD do septo, que é onde o valor 0.5 precisa estar;
-  - computeTransmural (VE) define epi = (class != 1) & (class != 3), ou seja,
-    a class 6 recebe tm = 1 (lado externo da parede do VE). Se o septo
-    estivesse marcado na face VE, essa região teria tm invertido.
-
-Este módulo faz, sobre o .vtp já marcado pelo pipeline:
-
-  1. permuta os rótulos para a convenção acima (deduzida do LABELS_UVC do
-     próprio pipeline, então se você corrigir o REMAP lá, a permutação vira
-     identidade automaticamente);
-  2. se o septo estiver na face VE, remapeia-o para a face VD;
-  3. valida o contrato (tetraedros, coincidência vtu↔vtp, sobrevivência do
-     apex ao mapeamento por vizinho mais próximo);
-  4. monta o layout de arquivos `<nome>.vtu` + `<nome>_for_UVC.vtp`.
-
 Dependências: vtk, numpy, scipy
 """
 
